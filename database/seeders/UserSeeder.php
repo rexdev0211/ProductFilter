@@ -15,8 +15,9 @@ class UserSeeder extends Seeder
     {
         $admin = \App\Models\User::factory()->create(['email' => 'admin@example.com']);
         $admin->assignRole('admin');
-        $user = \App\Models\User::factory()->create(['email' => 'lapa@example.com']);
-        $user->assignRole('patient');
-        \App\Models\Patient::factory()->create(['user_id' => $user->id]);
+        $user = \App\Models\User::factory()->create(['email' => 'client@example.com']);
+        $user->assignRole('client');
+        $user = \App\Models\User::factory()->create(['email' => 'user@example.com']);
+        $user->assignRole('user');
     }
 }

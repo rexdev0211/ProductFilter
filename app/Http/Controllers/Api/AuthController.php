@@ -50,19 +50,14 @@ class AuthController extends Controller
         $attributes = $request->validated();
 
         $user = User::create([
+            'name' => $attributes['fullname'],
             'email' => $attributes['email'],
             'password' => Hash::make($attributes['password'])
         ]);
         $token = $user->createToken('auth-token')->plainTextToken;
         $user->append(['primary_role_name', 'redirect_link']);
 
-        // temp
-        Patient::create([
-           'user_id' =>$user->id,
-           'goal' => 16,
-        ]);
-        $user->assignRole('patient');
-        // /temp
+        $user->assignRole('user');
 
         return response()->json([
             'user' => $user,
