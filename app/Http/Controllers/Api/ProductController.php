@@ -19,8 +19,8 @@ class ProductController extends Controller
         $search_key = $request->search_key ?: '';
         $category = $request->category ?: '';
         $manufacturer = $request->manufacturer ?: '';
-        $page = $request->page ?: 1;
-        $limit = $request->limit ?: 10;
+        $page = $request->page ?: 2;
+        $limit = $request->limit ?: 30;
         $date_added = $request->date_added ?: '';
         $date_modified = $request->date_added ?: '';
 
