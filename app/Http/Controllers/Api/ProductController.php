@@ -51,6 +51,7 @@ class ProductController extends Controller
     public function store(ProductRequest $request)
     {
         $attributes = $request->validated();
+
         try {
             return Product::create($attributes);
         } catch (\Throwable $t) {
@@ -67,7 +68,9 @@ class ProductController extends Controller
      */
     public function show($id)
     {
-        //
+        $product = Product::find($id);
+
+        return $product;
     }
 
     /**
@@ -77,9 +80,20 @@ class ProductController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(ProductRequest $request, $id)
     {
-        //
+        $attributes = $request->validated();
+
+        try {
+            $product = Product::find($id);
+
+            $product->update($attributes);
+
+            return $product;
+        } catch (\Throwable $t) {
+            report($t);
+            abort(500, $t->getMessage());
+        }
     }
 
     /**
@@ -90,6 +104,15 @@ class ProductController extends Controller
      */
     public function destroy($id)
     {
-        //
+        try {
+            $product = Product::find($id);
+
+            $product->delete();
+
+            return ['status' => true];
+        } catch (\Throwable $t) {
+            report($t);
+            abort(500, $t->getMessage());
+        }
     }
 }

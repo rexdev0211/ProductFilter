@@ -13,7 +13,7 @@ class ProductRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -34,18 +34,15 @@ class ProductRequest extends FormRequest
             'jan' => 'nullable|string',
             'mpn' => 'nullable|string',
             'upc' => 'nullable|string',
-            'discount_price' => 'numeric|required',
-            'price' => 'numeric|required',
+            'discount_price' => 'required|numeric',
+            'price' => 'required|numeric',
             'stock_status' => 'required',
-            'manufacture' => 'required',
+            'manufacturer' => 'required',
             'description' => 'required',
             'attributes' => 'required',
             'images' => 'required',
-            'date_added' => 'required',
             'date_parsing' => 'required',
-            'date_modified' => 'required',
-            'date_parsing' => 'required',
-            'quantity' => 'numeric|required',
+            'quantity' => 'required|numeric',
             'status' => 'nullable|numeric',
         ];
     }
