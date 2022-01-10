@@ -19,27 +19,37 @@ class ProductController extends Controller
         $search_key = $request->search_key ?: '';
         $category = $request->category ?: '';
         $manufacturer = $request->manufacturer ?: '';
-        $page = $request->page ?: 2;
-        $limit = $request->limit ?: 30;
         $date_added = $request->date_added ?: '';
-        $date_modified = $request->date_added ?: '';
+        $date_modified = $request->date_modified ?: '';
+        $page = $request->page ?: 1;
+        $limit = $request->limit ?: 30;
 
-        $products = Product::where(function($query) use ($search_key) {
-                        $query->where('id', $search_key)
-                            ->orWhere('name', 'like', '%' . $search_key . '%')
-                            ->orWhere('model', 'like', '%' . $search_key . '%');
-                    })
-                    ->where(function($query) use ($category, $manufacturer, $date_added, $date_modified) {
-                        if ($category) $query->where('category', $category);
-                        if ($manufacturer) $query->where('manufacturer', $manufacturer);
-                        if ($date_added) $query->whereBetween('date_added', [$date_added . '00:00:00', $date_added . '23:59:59']);
-                        if ($date_modified) $query->whereBetween('date_modified', [$date_modified . '00:00:00', $date_modified . '23:59:59']);
-                    })
+        $products_query = Product::where(function($query) use ($search_key) {
+                            $query->where('id', $search_key)
+                                ->orWhere('name', 'like', '%' . $search_key . '%')
+                                ->orWhere('model', 'like', '%' . $search_key . '%');
+                        })
+                        ->where(function($query) use ($category, $manufacturer, $date_added, $date_modified) {
+                            if ($category) $query->where('category', $category);
+                            if ($manufacturer) $query->where('manufacturer', $manufacturer);
+                            if ($date_added) $query->whereBetween('date_added', [$date_added . '00:00:00', $date_added . '23:59:59']);
+                            if ($date_modified) $query->whereBetween('date_modified', [$date_modified . '00:00:00', $date_modified . '23:59:59']);
+                        });
+
+        $products = $products_query
                     ->offset(($page - 1) * $limit)
                     ->limit($limit)
                     ->get();
 
-        return $products;
+        $total_counts = $products_query->count();
+
+        return [
+            'products' => $products,
+            'page' => $page,
+            'limit' => $limit,
+            'total_pages' => ceil($total_counts / $limit),
+            'total_counts' => $total_counts,
+        ];
     }
 
     /**
