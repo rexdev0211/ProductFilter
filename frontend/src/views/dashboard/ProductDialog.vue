@@ -6,7 +6,6 @@
     >
     <template v-slot:activator="{ on, attrs }">
       <v-btn
-      dark
       class="mb-2 addProduct_btn"
       v-bind="attrs"
       v-on="on"
@@ -311,5 +310,9 @@ export default {
   .member-dialog {
     width: 100%;
     padding: 20px;
+  }
+  .addProduct_btn {
+    background-color: teal !important;
+    color: white;
   }
 </style>
