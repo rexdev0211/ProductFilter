@@ -125,4 +125,38 @@ class ProductController extends Controller
             abort(500, $t->getMessage());
         }
     }
+
+    /**
+     * Get Categories
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function getCategories(Request $request) {
+        try {
+            $categories = Product::distinct()->orderBy('category')->get(['category']);
+
+            return $categories;
+        } catch (\Throwable $t) {
+            report($t);
+            abort(500, $t->getMessage());
+        }
+    }
+
+    /**
+     * Get Brands
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function getBrands(Request $request) {
+        try {
+            $brands = Product::distinct()->orderBy('manufacturer')->get(['manufacturer']);
+
+            return $brands;
+        } catch (\Throwable $t) {
+            report($t);
+            abort(500, $t->getMessage());
+        }
+    }
 }

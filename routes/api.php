@@ -24,6 +24,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('users/update-password', [UsersController::class, 'updatePassword']);
     Route::resource('users', UsersController::class)->only('index', 'show', 'store', 'update');
 
-    Route::resource('products', ProductController::class)->only('index', 'show', 'store', 'destroy', 'update');
+    Route::resource('products', ProductController::class)->only('index', 'store', 'destroy', 'update');
+    Route::get('products/getCategories', [ProductController::class, 'getCategories']);
+    Route::get('products/getBrands', [ProductController::class, 'getBrands']);
 });
 
