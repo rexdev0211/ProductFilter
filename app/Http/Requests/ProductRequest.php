@@ -27,7 +27,7 @@ class ProductRequest extends FormRequest
             'category' => 'required',
             'name' => 'required',
             'model' => 'required',
-            'sku' => 'required',
+            'sku' => 'nullable|string',
             'url' => 'required',
             'location' => 'required',
             'ean' => 'nullable|string',
@@ -36,14 +36,13 @@ class ProductRequest extends FormRequest
             'upc' => 'nullable|string',
             'discount_price' => 'required|numeric',
             'price' => 'required|numeric',
-            'stock_status' => 'required',
+            'stock_status' => 'boolean',
             'manufacturer' => 'required',
             'description' => 'required',
             'attributes' => 'required',
             'images' => 'required',
-            'date_parsing' => 'required',
             'quantity' => 'required|numeric',
-            'status' => 'nullable|numeric',
+            'status' => 'boolean',
         ];
     }
 }
