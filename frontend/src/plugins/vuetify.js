@@ -1,6 +1,8 @@
+import '@mdi/font/css/materialdesignicons.css';
 import Vue from 'vue';
+import 'vuetify/dist/vuetify.css'; // Ensure you are using css-loader
+import 'vuetify/dist/vuetify.min.css';
 import Vuetify from 'vuetify/lib/framework';
-import '@mdi/font/css/materialdesignicons.css' // Ensure you are using css-loader
 
 Vue.use(Vuetify);
 
@@ -12,9 +14,10 @@ export default new Vuetify({
         options: {
             customProperties: true,
         },
+        theme: { dark: true },
         themes: {
             light: {
-                primary: '#FFFFFF',
+                primary: '#008080',
                 secondary: '#6477D8',
                 dark: '#20416C',
                 light: '#FFFFFF',

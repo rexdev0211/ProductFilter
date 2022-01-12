@@ -16,15 +16,15 @@ class ProductController extends Controller
      */
     public function index(Request $request)
     {
-        $search_key = $request->search_key ?: '';
-        $category = $request->category ?: '';
-        $manufacturer = $request->manufacturer ?: '';
-        $date_added = $request->date_added ?: '';
-        $date_modified = $request->date_modified ?: '';
-        $page = $request->page ?: 1;
-        $limit = $request->limit ?: 30;
+        $search_key = $request->search_key ? $request->search_key : '';
+        $category = $request->category ? $request->category : '';
+        $manufacturer = $request->manufacturer ? $request->manufacturer : '';
+        $date_added = $request->date_added ? $request->date_added : '';
+        $date_modified = $request->date_modified ? $request->date_modified : '';
+        $page = $request->page ? $request->page : 1;
+        $limit = $request->limit ? $request->limit : 30;
 
-        $products_query = Product::where(function($query) use ($search_key) {
+        $products = Product::where(function($query) use ($search_key) {
                             $query->where('id', $search_key)
                                 ->orWhere('name', 'like', '%' . $search_key . '%')
                                 ->orWhere('model', 'like', '%' . $search_key . '%');
@@ -34,14 +34,23 @@ class ProductController extends Controller
                             if ($manufacturer) $query->where('manufacturer', $manufacturer);
                             if ($date_added) $query->whereBetween('date_added', [$date_added . '00:00:00', $date_added . '23:59:59']);
                             if ($date_modified) $query->whereBetween('date_modified', [$date_modified . '00:00:00', $date_modified . '23:59:59']);
-                        });
+                        })
+                        ->offset(($page - 1) * $limit)
+                        ->limit($limit)
+                        ->get();
 
-        $products = $products_query
-                    ->offset(($page - 1) * $limit)
-                    ->limit($limit)
-                    ->get();
-
-        $total_counts = $products_query->count();
+        $total_counts = Product::where(function($query) use ($search_key) {
+                                $query->where('id', $search_key)
+                                    ->orWhere('name', 'like', '%' . $search_key . '%')
+                                    ->orWhere('model', 'like', '%' . $search_key . '%');
+                            })
+                            ->where(function($query) use ($category, $manufacturer, $date_added, $date_modified) {
+                                if ($category) $query->where('category', $category);
+                                if ($manufacturer) $query->where('manufacturer', $manufacturer);
+                                if ($date_added) $query->whereBetween('date_added', [$date_added . '00:00:00', $date_added . '23:59:59']);
+                                if ($date_modified) $query->whereBetween('date_modified', [$date_modified . '00:00:00', $date_modified . '23:59:59']);
+                            })
+                            ->count();
 
         return [
             'products' => $products,
@@ -63,6 +72,7 @@ class ProductController extends Controller
         $attributes = $request->validated();
 
         try {
+            $attributes['date_parsing'] = date('Y-m-d H:i:s');
             return Product::create($attributes);
         } catch (\Throwable $t) {
             report($t);
