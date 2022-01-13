@@ -9,9 +9,16 @@ class Product extends Model
 {
     use HasFactory;
 
-    protected $table = 'dev_product';
+    protected $table = 'kvp_shop_product';
+
+    public function setTable($table)
+    {
+        $this->table = $table;
+        return $this;
+    }
 
     protected $fillable = [
+        'relation',
         'category',
         'name',
         'model',
@@ -29,7 +36,7 @@ class Product extends Model
         'description',
         'attributes',
         'images',
-        'date_parsing',
+        'images_d',
         'quantity',
         'status',
     ];

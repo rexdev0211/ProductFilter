@@ -24,6 +24,7 @@ class ProductRequest extends FormRequest
     public function rules()
     {
         return [
+            'relation' => 'nullable|string',
             'category' => 'required',
             'name' => 'required',
             'model' => 'required',
@@ -36,11 +37,12 @@ class ProductRequest extends FormRequest
             'upc' => 'nullable|string',
             'discount_price' => 'required|numeric',
             'price' => 'required|numeric',
-            'stock_status' => 'boolean',
+            'stock_status' => 'required',
             'manufacturer' => 'required',
             'description' => 'required',
             'attributes' => 'required',
             'images' => 'required',
+            'images_d' => 'nullable|string',
             'quantity' => 'required|numeric',
             'status' => 'boolean',
         ];

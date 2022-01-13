@@ -27,5 +27,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::resource('products', ProductController::class)->only('index', 'store', 'destroy', 'update');
     Route::get('products/getCategories', [ProductController::class, 'getCategories']);
     Route::get('products/getBrands', [ProductController::class, 'getBrands']);
+    Route::post('products/updateProductsStatus', [ProductController::class, 'updateProductsStatus']);
 });
 

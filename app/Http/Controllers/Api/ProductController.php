@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\ProductRequest;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ProductController extends Controller
 {
@@ -16,15 +17,22 @@ class ProductController extends Controller
      */
     public function index(Request $request)
     {
+        $target_db = $request->target_db ? $request->target_db : 'filters';
+        $target_table = $request->target_table ? $request->target_table : 'shop';
+
         $search_key = $request->search_key ? $request->search_key : '';
         $category = $request->category ? $request->category : '';
         $manufacturer = $request->manufacturer ? $request->manufacturer : '';
         $date_added = $request->date_added ? $request->date_added : '';
         $date_modified = $request->date_modified ? $request->date_modified : '';
+        $sorting_type = $request->sorting_type ? $request->sorting_type : '0';
         $page = $request->page ? $request->page : 1;
         $limit = $request->limit ? $request->limit : 30;
 
-        $products = Product::where(function($query) use ($search_key) {
+        $target_table = 'kvp_' . $target_table . '_product';
+
+        $products = DB::table($target_table)
+                        ->where(function($query) use ($search_key) {
                             $query->where('id', $search_key)
                                 ->orWhere('name', 'like', '%' . $search_key . '%')
                                 ->orWhere('model', 'like', '%' . $search_key . '%');
@@ -35,11 +43,13 @@ class ProductController extends Controller
                             if ($date_added) $query->whereBetween('date_added', [$date_added . '00:00:00', $date_added . '23:59:59']);
                             if ($date_modified) $query->whereBetween('date_modified', [$date_modified . '00:00:00', $date_modified . '23:59:59']);
                         })
+                        ->order_by('date_modified', ($sorting_type == '1' ? 'desc' : 'asc'))
                         ->offset(($page - 1) * $limit)
                         ->limit($limit)
                         ->get();
 
-        $total_counts = Product::where(function($query) use ($search_key) {
+        $total_counts = DB::table($target_table)
+                            ->where(function($query) use ($search_key) {
                                 $query->where('id', $search_key)
                                     ->orWhere('name', 'like', '%' . $search_key . '%')
                                     ->orWhere('model', 'like', '%' . $search_key . '%');
@@ -72,7 +82,6 @@ class ProductController extends Controller
         $attributes = $request->validated();
 
         try {
-            $attributes['date_parsing'] = date('Y-m-d H:i:s');
             return Product::create($attributes);
         } catch (\Throwable $t) {
             report($t);
@@ -164,6 +173,33 @@ class ProductController extends Controller
             $brands = Product::distinct()->orderBy('manufacturer')->get(['manufacturer']);
 
             return $brands;
+        } catch (\Throwable $t) {
+            report($t);
+            abort(500, $t->getMessage());
+        }
+    }
+
+
+    /**
+     * Update multiple products' status
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function updateProductsStatus(Request $request) {
+        $status = $request->status;
+        $product_ids = $request->product_ids;
+
+        $target_db = $request->target_db ? $request->target_db : 'filters';
+        $target_table = $request->target_table ? $request->target_table : 'shop';
+
+        $target_table = 'kvp_' . $target_table . '_product';
+
+        try {
+            var_dump($product_ids);
+            DB::table($target_table)->whereIn('id', $product_ids)->update(['status' => $status]);
+
+            return ['status' => true];
         } catch (\Throwable $t) {
             report($t);
             abort(500, $t->getMessage());
