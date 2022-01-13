@@ -1,84 +1,118 @@
 <template>
   <v-app>
+    <div style="display: flex; justify-content: center; margin-top: 10px;border-bottom: 2px solid gray; padding-bottom: 10px; margin-left: 30px; margin-right: 30px">
+      <a href="#" style="border-right: 2px solid; padding-right: 10px; height: 19px; font-size: 14px; font-weight: bold">Каталог</a>
+      <a href="#" style="border-right: 2px solid; padding-right: 10px; margin-left: 10px; height: 19px; font-size: 14px; font-weight: bold">Магазины</a>
+      <a href="#" style="border-right: 2px solid; padding-right: 10px; margin-left: 10px; height: 19px; font-size: 14px; font-weight: bold">Категории</a>
+      <a href="#" style="border-right: 2px solid; padding-right: 10px; margin-left: 10px; height: 19px; margin-left: 10px; font-size: 14px; font-weight: bold">Бренды</a>
+      <a href="#" style="border-right: 2px solid; padding-right: 10px; margin-left: 10px; height: 19px; margin-left: 10px; font-size: 14px; font-weight: bold">Пользователи</a>
+      <a href="#" style="border-right: 2px solid; padding-right: 10px; margin-left: 10px; height: 19px; margin-left: 10px; font-size: 14px; font-weight: bold">Отзывы</a>
+      <a href="#" style="border-right: 2px solid; padding-right: 10px; margin-left: 10px; height: 19px; margin-left: 10px; font-size: 14px; font-weight: bold">SEO</a>
+      <a href="#" style="border-right: 2px solid; padding-right: 10px; margin-left: 10px; height: 19px; margin-left: 10px; font-size: 14px; font-weight: bold">Настройки</a>
+      <a style="padding-right: 10px; margin-left: 10px; height: 19px; margin-left: 10px; font-size: 14px; font-weight: bold" @click="handleLogout" >Выход </a>
+    </div>
     <div class="main">
-      <v-btn @click="handleLogout" class="logout">
-        Logout
-      </v-btn>
-      <v-card-title class="header">
-        <div style="display: flex;">
-          <span style="margin-right: 20px; margin-top: 10px">
-            Product Filters
-          </span>
-          <v-spacer></v-spacer>
-          <v-select
-            :items="items"
-            label="Choose Database..."
-            dense
-            filled
-          ></v-select>
-        </div>
+      <v-card-title style="display:flex; align-items: center; justify-content:space-between; margin-right: 30px" class="header">
+          <div style="display: flex;">
+            <span style="font-size: 14px">
+              Всего: {{ totalProducts }} товаров
+            </span>
+            <v-spacer></v-spacer>
+            <a class="mb-2" style="margin-left:10px; font-size: 14px" @click="createProductDialog">:: Добавить товар ::</a>
+            <a class="mb-2" style="margin-left:10px; font-size: 14px" @click="settings">Настройки</a>
+          </div>
+          <div>
+            <span style="font-size: 14px">
+              Фильтр: <a @click="getProductAll">Все</a> /
+              <a @click="notUpdatedProducts">Давно не обнавлялись</a> / <a @click="updatedToday">Обнавлялись сегодня</a>
+            </span>
+          </div>
       </v-card-title>
       <div class="search_tab">
         <v-text-field
           v-model="search"
           append-icon="mdi-magnify"
-          label="Search"
-          single-line
+          label="ID, Название или Модель"
+          outlined
+          dense
           hide-details
           class="search_input"
+          :height="20"
         ></v-text-field>
-        <v-btn class="mb-2 search_btn" style="background-color: teal; color: white" @click="getProducts">
-          Search
+        <v-btn small style="background-color: teal; color: white; margin-bottom: 14px; margin-left: 10px" @click="searchProducts">
+          <span style="font-size: 14px; width:50px;">Искать</span>
         </v-btn>
-        <v-btn @click="settings" class="setting_btn">
-          Setting
-        </v-btn>
-        <v-select v-model="selectedHeaders" :items="headers" label="Select Columns" class="selectedHeaders" multiple solo return-object>
-          <template v-slot:selection="{ item, index }">
-            <v-chip v-if="index < 3">
-              <span>{{ item.text }}</span>
-            </v-chip>
-            <span v-if="index === 2" class="grey--text caption">(+{{ selectedHeaders.length - 3 }} others)</span>
-          </template>
-        </v-select>
-      </div>
-      <div style="display: flex; width: 1000px; margin-left: 30px;">
-        <SelectionSearch
-          type="brand"
-          title="Brands"
-          :states="brands"
-          :changeFilter="changeFilter"
-          :clearFilter="clearFilter"
-          style="border-radius: 4px"
-        />
-        <SelectionSearch
+        <div style="display: flex; width: 850px; margin-left: 10px; margin-bottom: 10px">
+          <SelectionSearch
           type="category"
-          title="Categories"
+          title="Категория"
           :states="categories"
           :changeFilter="changeFilter"
           :clearFilter="clearFilter"
-          style="margin-left: 20px; border-radius: 4px"
+          style="border-radius: 4px"
           />
+          <SelectionSearch
+            type="brand"
+            title="Бренд"
+            :states="brands"
+            :changeFilter="changeFilter"
+            :clearFilter="clearFilter"
+            style="border-radius: 4px; margin-left:10px"
+          />
+          <a v-if="showClearAllFilterText" style="margin-left:10px; font-size: 14px; width: 300px" @click="clearAllFilters">:: Сбросить все фильтры</a>
+        </div>
       </div>
-      <div class="text-center pt-2 pagination">
-        <v-pagination
-          v-model="page"
-          :length="pageCount"
-          :total-visible="7"
-          color="teal"
-          class="pagination"
-        ></v-pagination>
-        <v-text-field
-          :value="itemsPerPage"
-          v-model="itemsPerPage"
-          label="Rows:"
-          type="number"
-          min="-1"
-          max="15"
-          @input="itemsPerPage = parseInt($event, 10)"
-          class="centered-input"
-        ></v-text-field>
-      </div>
+      <v-card-title class="header" style="display:flex; align-items: center; justify-content:space-between; margin-right: 30px">
+        <div style="display: flex;">
+          <span style="font-size: 14px">
+            {{ itemsPerPage * (page - 1) + 1 }} ~ {{ itemsPerPage * page }} из {{ totalProducts }} найденных :: С отмеченными:
+          </span>
+          <v-spacer></v-spacer>
+          <v-select
+            item-text="text"
+            item-value="value"
+            v-model="defaultSelectedStatus"
+            :items="status"
+            label="Статус"
+            outlined
+            style="width: 150px; margin-left:10px"
+            @change="changeStatus"
+          ></v-select>
+          <v-btn small style="background-color: teal; color: white; margin-bottom: 14px; margin-left: 10px" @click="changeSelectedStatus">
+            <span style="font-size: 14px;">Применить</span>
+          </v-btn>
+          <v-select v-model="selectedHeaders" :items="headers" label="Select Columns" class="selectedHeaders" multiple solo dense return-object>
+            <template v-slot:selection="{ index }">
+              <span v-if="index === 1" class="grey--text caption">Число колон - {{ selectedHeaders.length }}</span>
+            </template>
+          </v-select>
+        </div>
+        <div class="text-center pt-2 pagination" style="margin-top: -20px">
+          <v-pagination
+            v-model="page"
+            :length="pageCount"
+            :total-visible="7"
+            color="teal"
+            class="pagination"
+          ></v-pagination>
+          <v-text-field
+            :value="itemsPerPage"
+            v-model="itemsPerPage"
+            label="Rows:"
+            type="number"
+            min="-1"
+            max="15"
+            @input="itemsPerPage = parseInt($event, 10)"
+            class="centered-input pageInput"
+          ></v-text-field>
+        </div>
+      </v-card-title>
+      <!-- <v-select
+            :items="items"
+            label="Choose Database..."
+            dense
+            filled
+          ></v-select> -->
       <v-data-table
         :headers="showHeaders"
         :items="products"
@@ -88,6 +122,7 @@
         :single-select="singleSelect"
         item-key="name"
         show-select
+        v-model="checkedProductList"
         :items-per-page="itemsPerPage"
         :header-props="{ sortIcon: null }"
         hide-default-footer
@@ -96,19 +131,6 @@
           <v-toolbar
             flat
           >
-            <v-toolbar-title>Product List</v-toolbar-title>
-            <v-divider
-              class="mx-4"
-              inset
-              vertical
-            ></v-divider>
-            <v-spacer></v-spacer>
-            <v-btn
-              class="mb-2 addProduct_btn"
-              @click="createProductDialog"
-            >
-              Add Product
-            </v-btn>
             <ProductDialog
               :dialogOpen="dialogOpen"
               :dialogMode="dialogMode"
@@ -170,64 +192,74 @@
             <span class="tooltip">{{ getFormated(item.attributes) }}</span>
           </v-tooltip>
         </template>
-          <template v-slot:[`item.images`]="{ item }">
-            <div v-if="otherImgShow">
-              <div v-if="selectedImgSize === '50х50' || selectedImgSize === ''">
-                <img
-                  v-for="(image, index) in item.images.split(',')" :key="index"
-                  :src="image"
-                  :class="index == 0 ? 'mainImg1':'otherImg1'"
-                />
-              </div>
-              <div v-if="selectedImgSize === '100х100'">
-                <img
-                  v-for="(image, index) in item.images.split(',')" :key="index"
-                  :src="image"
-                  :class="index == 0 ? 'mainImg2':'otherImg2'"
-                />
-              </div>
-              <div v-if="selectedImgSize === '150х150'">
-                <img
-                  v-for="(image, index) in item.images.split(',')" :key="index"
-                  :src="image"
-                  :class="index == 0 ? 'mainImg3':'otherImg3'"
-                />
-              </div>
-              <div v-if="selectedImgSize === '200х200'">
-                <img
-                  v-for="(image, index) in item.images.split(',')" :key="index"
-                  :src="image"
-                  :class="index == 0 ? 'mainImg4':'otherImg4'"
-                />
-              </div>
+        <template v-slot:[`item.images`]="{ item }">
+          <div v-if="otherImgShow">
+            <div v-if="selectedImgSize === '50х50' || selectedImgSize === ''">
+              <img
+                v-for="(image, index) in item.images.split(',')" :key="index"
+                :src="image"
+                :class="index == 0 ? 'mainImg1':'otherImg1'"
+              />
             </div>
-            <div v-if="!otherImgShow">
-              <div v-if="selectedImgSize === '50х50' || selectedImgSize === ''">
-                <img
-                  :src="item.images.split(',')[0]"
-                  class="mainImg1"
-                />
-              </div>
-              <div v-if="selectedImgSize === '100х100'">
-                <img
-                  :src="item.images.split(',')[0]"
-                  class="mainImg2"
-                />
-              </div>
-              <div v-if="selectedImgSize === '150х150'">
-                <img
-                  :src="item.images.split(',')[0]"
-                  class="mainImg3"
-                />
-              </div>
-              <div v-if="selectedImgSize === '200х200'">
-                <img
-                  :src="item.images.split(',')[0]"
-                  class="mainImg4"
-                />
-              </div>
+            <div v-if="selectedImgSize === '100х100'">
+              <img
+                v-for="(image, index) in item.images.split(',')" :key="index"
+                :src="image"
+                :class="index == 0 ? 'mainImg2':'otherImg2'"
+              />
             </div>
-          </template>
+            <div v-if="selectedImgSize === '150х150'">
+              <img
+                v-for="(image, index) in item.images.split(',')" :key="index"
+                :src="image"
+                :class="index == 0 ? 'mainImg3':'otherImg3'"
+              />
+            </div>
+            <div v-if="selectedImgSize === '200х200'">
+              <img
+                v-for="(image, index) in item.images.split(',')" :key="index"
+                :src="image"
+                :class="index == 0 ? 'mainImg4':'otherImg4'"
+              />
+            </div>
+          </div>
+          <div v-if="!otherImgShow">
+            <div v-if="selectedImgSize === '50х50' || selectedImgSize === ''">
+              <img
+                :src="item.images.split(',')[0]"
+                class="mainImg1"
+              />
+            </div>
+            <div v-if="selectedImgSize === '100х100'">
+              <img
+                :src="item.images.split(',')[0]"
+                class="mainImg2"
+              />
+            </div>
+            <div v-if="selectedImgSize === '150х150'">
+              <img
+                :src="item.images.split(',')[0]"
+                class="mainImg3"
+              />
+            </div>
+            <div v-if="selectedImgSize === '200х200'">
+              <img
+                :src="item.images.split(',')[0]"
+                class="mainImg4"
+              />
+            </div>
+          </div>
+        </template>
+        <template v-slot:[`item.date_added`]="{ item }">
+          <span>
+            {{ item.date_added.slice(0, 10) }}
+          </span>
+        </template>
+        <template v-slot:[`item.date_modified`]="{ item }">
+          <span>
+            {{ item.date_modified.slice(0, 10) }}
+          </span>
+        </template>
         <template v-slot:[`item.status`]="{ item }">
           <span :class="item.status == 1 ? 'true' : 'false'">
             {{ item.status == 1 ? 'Включен' : 'Выключен' }}
@@ -277,6 +309,7 @@ import ProductDialog from './ProductDialog.vue';
 import SelectionSearch from './SelectionSearch.vue';
 const initProduct = {
   id: 0,
+  relation:'',
   category: '',
   name:'',
   model:'',
@@ -289,16 +322,14 @@ const initProduct = {
   upc:'',
   discount_price:'',
   price:'',
-  stock_status:'',
+  stock_status:'Есть в Наличии',
   manufacturer:'',
   description:'',
   attributes:'',
   images:'',
-  date_added:'',
-  date_parsing:'',
-  date_modified:'',
+  images_d:'',
   quantity:'',
-  status:'',
+  status: 1,
 }
 export default {
   components: {
@@ -306,7 +337,23 @@ export default {
     SelectionSearch,
   },
   data: () => ({
-    cat: [],
+    pageLoading: false,
+    dateOfToday: '',
+    checkedProductList: [],
+    checkedProductIds: [],
+    defaultSelectedStatus: 1,
+    status: [
+      {
+        value: 1,
+        text: 'Включить'
+      },
+      {
+        value: 0,
+        text: 'Выключить'
+      }
+    ],
+    startCount: 0,
+    endCount: 10,
     brands: [],
     categories: [],
     selectedImgSize: '',
@@ -326,34 +373,38 @@ export default {
     selectedHeaders: [],
     headers: [],
     headersMap: [
-      { text: 'id', value: 'id', sortable: true, align: "center"},
-      { text: 'category', value: 'category', sortable: true, width: "100px", align: "center", class: ''},
-      { text: 'name', value: 'name', sortable: true, width: "150px", align: "center", class: '' },
-      { text: 'model', value: 'model', sortable: true, width: "100px", align: "center", class: '' },
-      { text: 'sku', value: 'sku', sortable: false, width: "20%", align: "center" },
-      { text: 'url', value: 'url', sortable: false, width: "20%", align: "center" },
-      { text: 'location', value: 'location', sortable: false, width: "20%", align: "center" },
-      { text: 'ean', value: 'ean', sortable: false, width: "20%", align: "center" },
-      { text: 'jan', value: 'jan', sortable: false, width: "20%", align: "center" },
-      { text: 'mpn', value: 'mpn', sortable: false, width: "20%", align: "center" },
-      { text: 'upc', value: 'upc', sortable: false, width: "20%", align: "center" },
-      { text: 'discount_price', value: 'discount_price', sortable: false, width: "20%", align: "center" },
-      { text: 'price', value: 'price', sortable: true, width: "20%", align: "center", class: '' },
-      { text: 'stock_status', value: 'stock_status', sortable: false, width: "20%", align: "center" },
-      { text: 'manufacturer', value: 'manufacturer', sortable: true, width: "130px", align: "center", class: '' },
-      { text: 'description', value: 'description', sortable: false, width: "20%", align: "center" },
-      { text: 'attributes', value: 'attributes', sortable: false, width: "20%", align: "center" },
-      { text: 'images', value: 'images', sortable: false, width: "20%", align: "center" },
-      { text: 'date_added', value: 'date_added', sortable: false, width: "20%", align: "center" },
-      { text: 'date_parsing', value: 'date_parsing', sortable: false, width: "20%", align: "center" },
-      { text: 'date_modified', value: 'date_modified', sortable: false, width: "20%", align: "center" },
-      { text: 'quantity', value: 'quantity', sortable: false, width: "20%", align: "center" },
-      { text: 'status', value: 'status', sortable: false, width: "20%", align: "center" },
-      { text: 'Actions', value: 'actions', sortable: false, width: "20%", align: "center" },
+      { text: 'id', value: 'id', sortable: true, align: "center", class: ''},
+      { text: 'relation', value: 'relation', sortable: true,  align: "center", class: ''},
+      { text: 'category', value: 'category', sortable: true,  align: "center", class: ''},
+      { text: 'name', value: 'name', sortable: true,  align: "center", class: '' },
+      { text: 'model', value: 'model', sortable: true,  align: "center", class: '' },
+      { text: 'sku', value: 'sku', sortable: false,  align: "center" },
+      { text: 'url', value: 'url', sortable: false,  align: "center" },
+      { text: 'location', value: 'location', sortable: false,  align: "center" },
+      { text: 'ean', value: 'ean', sortable: false,  align: "center" },
+      { text: 'jan', value: 'jan', sortable: false,  align: "center" },
+      { text: 'mpn', value: 'mpn', sortable: false,  align: "center" },
+      { text: 'upc', value: 'upc', sortable: false,  align: "center" },
+      { text: 'discount_price', value: 'discount_price', sortable: false,  align: "center" },
+      { text: 'price', value: 'price', sortable: true,  align: "center", class: '' },
+      { text: 'stock_status', value: 'stock_status', sortable: false,  align: "center" },
+      { text: 'manufacturer', value: 'manufacturer', sortable: true, align: "center", class: '' },
+      { text: 'description', value: 'description', sortable: false, align: "center" },
+      { text: 'attributes', value: 'attributes', sortable: false, align: "center" },
+      { text: 'images', value: 'images', sortable: false, align: "center" },
+      { text: 'images_d', value: 'images_d', sortable: false,align: "center" },
+      { text: 'date_added', value: 'date_added', sortable: false, align: "center" },
+      { text: 'date_modified', value: 'date_modified', sortable: false, align: "center" },
+      { text: 'quantity', value: 'quantity', sortable: false, align: "center" },
+      { text: 'status', value: 'status', sortable: false, align: "center" },
+      { text: 'Actions', value: 'actions', sortable: false, align: "center" },
     ],
     products: [],
     editedIndex: -1,
     selectProduct: initProduct,
+    totalProducts: 0,
+    sorting_type: 0,
+    showClearAllFilterText: false,
   }),
 
   created () {
@@ -371,10 +422,20 @@ export default {
     },
     showHeaders () {
       return this.headers.filter(s => this.selectedHeaders.includes(s));
+    },
+    compoundProperty() {
+        return [this.search, this.category, this.brand, this.sorting_type, this.dateOfToday].join()
     }
   },
 
   mounted() {
+    for(let i = 0; i < this.headersMap.length; i++) {
+      if(this.headersMap[i].sortable === true) {
+        this.headersMap[i].class = "teal--text";
+      } else {
+        this.headersMap[i].class = "";
+      }
+    }
   },
 
   watch: {
@@ -386,6 +447,9 @@ export default {
       console.log('itemsPerPage', val);
       this.getProducts(this.search, this.brand, this.category, this.page, val);
     },
+    compoundProperty() {
+      this.showClearAllFilterText = true;
+    }
   },
 
   methods: {
@@ -394,8 +458,20 @@ export default {
     },
     changeImgSize(size) {
       console.log('changeImgSize', size);
-      console.log("Selected Image", this.selectedImgSize)
       this.selectedImgSize = size;
+    },
+    changeStatus(status) {
+      console.log('selectProduct', status, this.selectProduct);
+
+    },
+    clearAllFilters() {
+      console.log("CLEAR")
+      this.search = '';
+      this.category = '';
+      this.brand = '';
+      this.sorting_type = 0;
+      this.dateOfToday = '';
+      this.getProducts();
     },
     sortActive () {
       console.log("Rex")
@@ -419,6 +495,9 @@ export default {
       let styledText = removedTags.replaceAll('<br>', '\n');
       let cutText = styledText.slice(0, 30)
       return cutText;
+    },
+    searchProducts() {
+      this.getProducts(this.search, this.brand, this.category, this.page, this.itemsPerPage);
     },
 
     // Dialog Parts
@@ -465,16 +544,18 @@ export default {
     },
 
     // Api parts
-    getProducts(search = '', brand = '', category = '', page = 1, limit = 10) {
+    getProducts(search = '', brand = '', category = '', page = 1, limit = 10, date_added = '', date_modified = '', sorting_type = '0') {
+      this.pageLoading = true;
       window.axios
-        .get(`/api/products?search_key=${search}&manufacturer=${brand}&category=${category}&page=${page}&limit=${limit}`)
+        .get(`/api/products?search_key=${search}&manufacturer=${brand}&category=${category}&page=${page}&limit=${limit}&date_added=${date_added}&date_modified=${date_modified}&sorting_type=${sorting_type}`)
         .then((res) => {
           console.log(res);
           this.products = res.data.products;
           this.page = parseInt(res.data.page);
           this.pageCount = res.data.total_pages;
+          this.pageLoading = false;
           console.log('pageCount', this.pageCount);
-          // vm.$forceUpdate();
+          this.totalProducts = res.data.total_counts;
         })
         .catch((err) => {
           console.log("err", err);
@@ -491,7 +572,6 @@ export default {
             for(let i = 0; i < this.categories.length; i ++) {
               this.categories[i].split('|')
             }
-            console.log("cate", this.cat)
           }
         })
         .catch((err) => {
@@ -551,14 +631,47 @@ export default {
       await this.$auth.logout();
       await this.$router.push({ name: "login" });
     },
+
+    notUpdatedProducts() {
+      this.sorting_type = 1;
+      this.getProducts(this.search, this.brand, this.category, this.page, this.itemsPerPage, '', this.date_modified, this.sorting_type);
+    },
+
+    getProductAll() {
+      this.sorting_type = 0;
+      this.dateOfToday = '';
+      this.getProducts();
+    },
+
+    updatedToday() {
+      this.sorting_type = 0;
+      this.dateOfToday = new Date().toISOString().slice(0, 10);
+      console.log("Today", this.dateOfToday)
+      this.getProducts(this.search, this.brand, this.category, this.page, this.itemsPerPage, '', this.dateOfToday, this.sorting_type);
+    },
+
+    changeSelectedStatus() {
+      if (this.checkedProductList.length > 0) {
+        this.checkedProductIds = this.checkedProductList.map(item => item.id);
+        // Create
+        window.axios.post(`/api/products/updateProductsStatus`, {
+          status: this.defaultSelectedStatus,
+          product_ids: this.checkedProductIds
+        })
+          .then(() => {
+            console.log("Successfully Changed")
+            this.getProducts(this.search, this.brand, this.category, this.page, this.itemsPerPage, '', this.dateOfToday, 1);
+          })
+          .catch((err) => {
+            console.log('err', err)
+          })
+      }
+    }
   }
 }
 </script>
 
 <style scoped>
-  .main {
-    background-color: #efefef;
-  }
   .v-data-table >>> td {
     border: 0.5px solid gray;
     font-size: 12px !important;
@@ -573,21 +686,37 @@ export default {
   .v-data-table >>> tr:nth-of-type(odd) {
     background-color: #ebebeb;
   }
+  .v-data-table >>> header {
+    height: 0px !important;
+  }
   .header {
-    margin-top: 20px !important;
+    margin-top: 10px !important;
     padding: 0px;
     margin-left: 30px;
   }
   .selectedHeaders {
     margin-left: 20px;
-    margin-top: 32px;
     width: 200px;
-  }
-  .search_btn {
-    margin-top: 22px;
+    margin-top: -6px !important;
   }
   .search_input {
-    width: 100px;
+    width: 90px;
+  }
+  .v-btn >>> span {
+    font-size: 12px !important;
+  }
+  .v-text-field >>> label {
+      font-size: 0.8em;
+      top: 3px !important;
+  }
+  .v-text-field >>> fieldset {
+      height: 30px !important;
+  }
+  .v-text-field >>> i {
+      margin-bottom: 12px !important;
+  }
+  .v-text-field >>> input {
+      margin-bottom: 16px !important;
   }
   .v-card__title {
     margin-top: -45px;
@@ -644,23 +773,43 @@ export default {
     float: right;
   }
   .mainTable {
-    margin-top: 80px;
     padding: 5px;
+  }
+  .v-select >>> label {
+    font-size: 14px !important;
+    top: 12px !important;
+  }
+  .v-select >>> fieldset {
+    margin-bottom: 20px !important;
+    height: 33px !important
+  }
+  .v-select >>> i {
+    margin-bottom: 35px !important;
+  }
+  .v-select >>> div {
+    height: 33px;
+    margin-bottom:20px
+  }
+  .selectedHeaders >>> span {
+    margin-top:25px
+  }
+  .selectedHeaders >>> i {
+    margin-top: 75px !important;
   }
   .centered-input >>> input {
     text-align: center;
+    height: 30px;
+    margin-bottom: 0px !important;
   }
   .centered-input {
-    width: 100px;
+    width: 70px;
     margin-top: -6px;
-
   }
   .search_tab{
     display: flex;
     align-items: center;
-    max-width: 800px;
+    max-width: 1200px;
     margin-left: 30px;
-    margin-top: -30px !important;
   }
   .logout {
     margin-right: 30px;

@@ -1,26 +1,19 @@
 <template>
-  <v-toolbar
-    dark
-    color="teal"
-  >
-    <v-toolbar-title style="font-size:16px">{{ title }}: </v-toolbar-title>
+  <div style="display: flex; justify-content: center; align-items: center">
+    <span style="font-size:14px; margin-right: 10px; margin-bottom:5px">{{ title }}: </span>
     <v-autocomplete
       v-model="select"
-      :loading="loading"
       :items="items"
       :search-input.sync="search"
-      cache-items
-      class="mx-4"
-      flat
+      dense
+      outlined
       hide-no-data
-      hide-details
-      label="Please type the search key..."
-      solo-inverted
+      label="Выберите значение"
     ></v-autocomplete>
-    <v-btn @click="removeFilter(type)" style="background-color: teal;">
+    <a @click="removeFilter(type)" style="margin-left: 5px; margin-bottom:5px">
       <v-icon>mdi-cancel</v-icon>
-    </v-btn>
-  </v-toolbar>
+    </a>
+  </div>
 </template>
 
 <script>
@@ -49,7 +42,7 @@
       },
       select (val) {
         console.log('select', this.type, val);
-        this.changeFilter(this.type, val);
+        this.changeFilter(this.type, val !== null ? val : '');
       }
     },
     methods: {
@@ -70,3 +63,20 @@
     },
   }
 </script>
+
+<style scoped>
+  .v-autocomplete >>> label {
+    font-size: 14px !important;
+    top: 5px !important;
+  }
+  .v-autocomplete >>> fieldset {
+    margin-bottom: 20px !important;
+    height: 33px !important
+  }
+  .v-autocomplete >>> i {
+    margin-bottom: 20px !important;
+  }
+  .v-autocomplete >>> div {
+    height: 33px;
+  }
+</style>
