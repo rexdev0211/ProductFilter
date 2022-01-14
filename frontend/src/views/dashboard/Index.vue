@@ -44,12 +44,13 @@
         </v-btn>
         <div style="display: flex; width: 850px; margin-left: 10px; margin-bottom: 10px">
           <SelectionSearch
-          type="category"
-          title="Категория"
-          :states="categories"
-          :changeFilter="changeFilter"
-          :clearFilter="clearFilter"
-          style="border-radius: 4px"
+            type="category"
+            title="Категория"
+            :states="categories"
+            :changeFilter="changeFilter"
+            :clearFilter="clearFilter"
+            :cleared="categoryCleared"
+            style="border-radius: 4px"
           />
           <SelectionSearch
             type="brand"
@@ -57,6 +58,7 @@
             :states="brands"
             :changeFilter="changeFilter"
             :clearFilter="clearFilter"
+            :cleared="brandCleared"
             style="border-radius: 4px; margin-left:10px"
           />
           <a v-if="showClearAllFilterText" style="margin-left:10px; font-size: 14px; width: 300px" @click="clearAllFilters">:: Сбросить все фильтры</a>
@@ -405,6 +407,8 @@ export default {
     totalProducts: 0,
     sorting_type: 0,
     showClearAllFilterText: false,
+    categoryCleared: false,
+    brandCleared: false,
   }),
 
   created () {
@@ -466,6 +470,9 @@ export default {
     },
     clearAllFilters() {
       console.log("CLEAR")
+      this.categoryCleared = true;
+      this.brandCleared = true;
+
       this.search = '';
       this.category = '';
       this.brand = '';
@@ -525,11 +532,12 @@ export default {
     },
     changeFilter(type, val) {
       console.log("Seleceted Items", type, val);
+      this.cleared = false;
       if(type === 'brand') {
         this.brand = val;
       }
       else if (type === 'category') {
-        this.category = val;
+        this.category = val.replaceAll(' | ', '|');
       }
       this.getProducts(this.search, this.brand, this.category);
     },
@@ -567,16 +575,40 @@ export default {
         .then((res) => {
           console.log(res);
           if (res.data.length > 0) {
-            this.categories = res.data.map(item => item.category);
-            console.log("categ", this.categories)
-            for(let i = 0; i < this.categories.length; i ++) {
-              this.categories[i].split('|')
-            }
+            this.categories = this.makeCategories(res.data.map(item => item.category));
+            // console.log("categ", this.categories)
+            // for(let i = 0; i < this.categories.length; i ++) {
+            //   this.categories[i].split('|')
+            // }
           }
         })
         .catch((err) => {
           console.log("err", err);
         });
+    },
+    makeCategories(list) {
+        // console.log('list', list);
+        let temp = '';
+        let tempArr = [];
+        [0, 1, 2, 3, 4, 5].forEach((index) => {
+            list.forEach((item) => {
+                let itemArr = item.split('|');
+                if (itemArr.length < index + 1) return;
+
+                let temp1 = itemArr[0];
+                for (let i = 1; i <= index; i++) {
+                    temp1 += ` | ${itemArr[i]}`;
+                }
+                console.log('temp1', temp1);
+                if (temp !== temp1) {
+                    temp = temp1;
+                    tempArr.push(temp);
+                }
+            })
+        })
+
+        console.log('tempArr', tempArr.sort());
+        return tempArr.sort();
     },
     getBrand() {
       window.axios
