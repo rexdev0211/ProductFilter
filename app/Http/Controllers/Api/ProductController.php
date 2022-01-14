@@ -38,12 +38,12 @@ class ProductController extends Controller
                                 ->orWhere('model', 'like', '%' . $search_key . '%');
                         })
                         ->where(function($query) use ($category, $manufacturer, $date_added, $date_modified) {
-                            if ($category) $query->where('category', $category);
+                            if ($category) $query->where('category', 'like', $category . '%');
                             if ($manufacturer) $query->where('manufacturer', $manufacturer);
                             if ($date_added) $query->whereBetween('date_added', [$date_added . '00:00:00', $date_added . '23:59:59']);
                             if ($date_modified) $query->whereBetween('date_modified', [$date_modified . '00:00:00', $date_modified . '23:59:59']);
                         })
-                        ->orderBy('date_modified', ($sorting_type == '1' ? 'desc' : 'asc'))
+                        ->orderBy(($sorting_type == '1' ? 'date_modified' : 'id'), ($sorting_type == '1' ? 'desc' : 'asc'))
                         ->offset(($page - 1) * $limit)
                         ->limit($limit)
                         ->get();
@@ -55,7 +55,7 @@ class ProductController extends Controller
                                     ->orWhere('model', 'like', '%' . $search_key . '%');
                             })
                             ->where(function($query) use ($category, $manufacturer, $date_added, $date_modified) {
-                                if ($category) $query->where('category', $category);
+                                if ($category) $query->where('category', 'like', $category . '%');
                                 if ($manufacturer) $query->where('manufacturer', $manufacturer);
                                 if ($date_added) $query->whereBetween('date_added', [$date_added . '00:00:00', $date_added . '23:59:59']);
                                 if ($date_modified) $query->whereBetween('date_modified', [$date_modified . '00:00:00', $date_modified . '23:59:59']);

@@ -23,7 +23,8 @@
       title: String,
       states: Array,
       changeFilter: Function,
-      clearFilter: Function
+      clearFilter: Function,
+      cleared: Boolean,
     },
     data () {
       return {
@@ -43,6 +44,9 @@
       select (val) {
         console.log('select', this.type, val);
         this.changeFilter(this.type, val !== null ? val : '');
+      },
+      cleared () {
+        if (this.cleared) this.select = '';
       }
     },
     methods: {
